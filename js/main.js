@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize mobile menu
     initMobileMenu();
     
-    // Load vehicles FIRST
+    // Load vehicles FIRST - THIS FETCHES GOOGLE SHEET DATA
     console.log("Loading vehicles for homepage...");
     await fetchVehiclesFromSheet();
     console.log("allVehicles after fetch:", window.allVehicles?.length);
@@ -120,10 +120,10 @@ async function loadFeaturedVehicles() {
     grid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading vehicles...</div>';
     
     try {
-        // Use global vehicles
+        // Use global vehicles from Google Sheet
         const vehicles = window.allVehicles.filter(v => v.status === 'AVAILABLE').slice(0, 4);
         
-        console.log("🏆 Featured vehicles:", vehicles);
+        console.log("🏆 Featured vehicles from Google Sheet:", vehicles);
         
         if (vehicles.length === 0) {
             grid.innerHTML = '<p class="no-vehicles">No featured vehicles available</p>';
@@ -220,17 +220,17 @@ window.openVehicleModal = function(vehicleId) {
     // Convert to number if it's a string
     const id = typeof vehicleId === 'string' ? parseInt(vehicleId) : vehicleId;
     
-    // Find vehicle in global storage
+    // Find vehicle in global storage (from Google Sheet)
     const vehicle = window.allVehicles.find(v => v.id === id);
     
     if (!vehicle) {
         console.error("❌ Vehicle not found! ID:", id);
-        console.log("Available vehicles:", window.allVehicles);
+        console.log("Available vehicles from Google Sheet:", window.allVehicles);
         alert("Vehicle not found!");
         return;
     }
     
-    console.log("✅ Found vehicle:", vehicle.name);
+    console.log("✅ Found vehicle from Google Sheet:", vehicle.name);
     
     const modal = document.getElementById('vehicle-modal');
     const modalBody = document.getElementById('modal-body');
@@ -394,3 +394,5 @@ function closeModal() {
         document.body.style.overflow = 'auto';
     }
 }
+
+// ========== END MODAL FUNCTIONS ==========
