@@ -15,9 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize mobile menu
     initMobileMenu();
     
-    // Load vehicles FIRST
+    // Load vehicles FIRST - wait for it to complete
     console.log("Loading vehicles for homepage...");
-    await fetchVehiclesFromSheet();
+    const vehicles = await fetchVehiclesFromSheet();
+    console.log("Vehicles loaded:", vehicles.length);
     
     // Then load featured vehicles
     loadFeaturedVehicles();
@@ -38,10 +39,8 @@ function initHeroSlider() {
     const slides = track.children;
     const totalSlides = slides.length;
     
-    // Clear existing dots
     dotsContainer.innerHTML = '';
     
-    // Create dots
     for (let i = 0; i < totalSlides; i++) {
         const dot = document.createElement('button');
         dot.className = `dot ${i === 0 ? 'active' : ''}`;
@@ -57,7 +56,6 @@ function initHeroSlider() {
         currentSlide = index;
         track.style.transform = `translateX(-${currentSlide * 100}%)`;
         
-        // Update dots
         document.querySelectorAll('#banner-dots .dot').forEach((dot, i) => {
             dot.classList.toggle('active', i === currentSlide);
         });
@@ -74,10 +72,8 @@ function initHeroSlider() {
         clearInterval(slideInterval);
     }
     
-    // Start auto slide
     startSlider();
     
-    // Pause on hover
     const sliderContainer = document.querySelector('.banner-slider-container');
     if (sliderContainer) {
         sliderContainer.addEventListener('mouseenter', stopSlider);
@@ -97,7 +93,6 @@ function initMobileMenu() {
         document.body.classList.toggle('menu-open');
     });
     
-    // Close menu when clicking a link
     document.querySelectorAll('.nav-menu a').forEach(link => {
         link.addEventListener('click', () => {
             hamburger.classList.remove('active');
@@ -109,16 +104,27 @@ function initMobileMenu() {
 
 async function loadFeaturedVehicles() {
     const grid = document.getElementById('featured-vehicles-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.error("Featured vehicles grid not found");
+        return;
+    }
     
     // Show loading
     grid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading vehicles...</div>';
     
     try {
-        // Use global vehicles
+        // Check if vehicles are loaded
+        if (!window.allVehicles || window.allVehicles.length === 0) {
+            console.log("No vehicles in window.allVehicles, fetching again...");
+            await fetchVehiclesFromSheet();
+        }
+        
+        console.log("All vehicles:", window.allVehicles);
+        
+        // Filter available vehicles
         const vehicles = window.allVehicles.filter(v => v.status === 'AVAILABLE').slice(0, 4);
         
-        console.log("🏆 Featured vehicles:", vehicles);
+        console.log("Featured vehicles:", vehicles);
         
         if (vehicles.length === 0) {
             grid.innerHTML = '<p class="no-vehicles">No featured vehicles available</p>';
@@ -148,6 +154,13 @@ async function loadFeaturedVehicles() {
 function loadYouTubeVideos() {
     const grid = document.getElementById('youtube-grid');
     if (!grid) return;
+    
+    // Check if vehicles are loaded
+    if (!window.allVehicles || window.allVehicles.length === 0) {
+        console.log("No vehicles for YouTube videos");
+        grid.innerHTML = '<p class="no-videos">No videos available</p>';
+        return;
+    }
     
     const videos = getYouTubeVideosFromVehicles(window.allVehicles);
     
@@ -182,11 +195,15 @@ function setActiveNavLink() {
     });
 }
 
-// Make openVehicleModal globally available
+// ========== MODAL FUNCTIONS ==========
 window.openVehicleModal = function(vehicleId) {
-    const vehicle = window.allVehicles.find(v => v.id === vehicleId);
+    console.log("Opening modal for vehicle ID:", vehicleId);
+    
+    const id = typeof vehicleId === 'string' ? parseInt(vehicleId) : vehicleId;
+    const vehicle = window.allVehicles.find(v => v.id === id);
+    
     if (!vehicle) {
-        console.error("Vehicle not found:", vehicleId);
+        console.error("Vehicle not found!");
         return;
     }
     
@@ -225,7 +242,6 @@ window.openVehicleModal = function(vehicleId) {
         `;
     }
     
-    // YouTube button only if link exists
     const youtubeButton = vehicle.youtube && vehicle.youtube.trim() !== '' ? 
         `<a href="${vehicle.youtube}" target="_blank" class="btn-youtube">
             <i class="fab fa-youtube"></i> Watch Review on YouTube
@@ -272,21 +288,14 @@ window.openVehicleModal = function(vehicleId) {
     document.body.style.overflow = 'hidden';
 };
 
-// Function to change modal image
 window.changeModalImage = function(src, element) {
     const mainImg = document.getElementById('modal-main-img');
-    if (mainImg) {
-        mainImg.src = src;
-    }
+    if (mainImg) mainImg.src = src;
     
-    // Update active class
-    document.querySelectorAll('.modal-thumbnail').forEach(t => {
-        t.classList.remove('active');
-    });
+    document.querySelectorAll('.modal-thumbnail').forEach(t => t.classList.remove('active'));
     element.classList.add('active');
 };
 
-// Share function
 window.shareVehicle = function(vehicleId) {
     const vehicle = window.allVehicles.find(v => v.id === vehicleId);
     if (!vehicle) return;
@@ -294,26 +303,12 @@ window.shareVehicle = function(vehicleId) {
     const shareText = `Check out this ${vehicle.name} (${vehicle.year}) priced at ${formatPrice(vehicle.price)}`;
     
     if (navigator.share) {
-        navigator.share({
-            title: vehicle.name,
-            text: shareText,
-            url: window.location.href
-        }).catch(() => {
-            copyToClipboard(shareText);
-        });
+        navigator.share({ title: vehicle.name, text: shareText, url: window.location.href });
     } else {
-        copyToClipboard(shareText);
+        navigator.clipboard.writeText(shareText);
+        alert('Vehicle details copied to clipboard!');
     }
 };
-
-// Helper function to copy to clipboard
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Vehicle details copied to clipboard!');
-    }).catch(() => {
-        alert('Press Ctrl+C to copy: ' + text);
-    });
-}
 
 // Modal close handlers
 document.addEventListener('DOMContentLoaded', () => {
@@ -321,29 +316,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modal) return;
     
     const closeBtn = modal.querySelector('.modal-close');
-    
     if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        });
     }
     
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
-            closeModal();
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
         }
     });
     
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.classList.contains('show')) {
-            closeModal();
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
         }
     });
 });
-
-function closeModal() {
-    const modal = document.getElementById('vehicle-modal');
-    if (modal) {
-        modal.classList.remove('show');
-        document.body.style.overflow = 'auto';
-    }
-}
-
