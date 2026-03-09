@@ -1,7 +1,6 @@
 // js/main.js
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🏠 Homepage loaded");
-    console.log("✅ main.js loaded");
     
     // Initialize AOS
     AOS.init({
@@ -16,10 +15,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize mobile menu
     initMobileMenu();
     
-    // Load vehicles FIRST - THIS FETCHES GOOGLE SHEET DATA
+    // Load vehicles FIRST
     console.log("Loading vehicles for homepage...");
     await fetchVehiclesFromSheet();
-    console.log("allVehicles after fetch:", window.allVehicles?.length);
     
     // Then load featured vehicles
     loadFeaturedVehicles();
@@ -29,9 +27,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Set active nav link
     setActiveNavLink();
-    
-    // Initialize modal close handlers
-    initModalHandlers();
 });
 
 function initHeroSlider() {
@@ -43,10 +38,8 @@ function initHeroSlider() {
     const slides = track.children;
     const totalSlides = slides.length;
     
-    // Clear existing dots
     dotsContainer.innerHTML = '';
     
-    // Create dots
     for (let i = 0; i < totalSlides; i++) {
         const dot = document.createElement('button');
         dot.className = `dot ${i === 0 ? 'active' : ''}`;
@@ -62,7 +55,6 @@ function initHeroSlider() {
         currentSlide = index;
         track.style.transform = `translateX(-${currentSlide * 100}%)`;
         
-        // Update dots
         document.querySelectorAll('#banner-dots .dot').forEach((dot, i) => {
             dot.classList.toggle('active', i === currentSlide);
         });
@@ -79,10 +71,8 @@ function initHeroSlider() {
         clearInterval(slideInterval);
     }
     
-    // Start auto slide
     startSlider();
     
-    // Pause on hover
     const sliderContainer = document.querySelector('.banner-slider-container');
     if (sliderContainer) {
         sliderContainer.addEventListener('mouseenter', stopSlider);
@@ -102,7 +92,6 @@ function initMobileMenu() {
         document.body.classList.toggle('menu-open');
     });
     
-    // Close menu when clicking a link
     document.querySelectorAll('.nav-menu a').forEach(link => {
         link.addEventListener('click', () => {
             hamburger.classList.remove('active');
@@ -116,14 +105,12 @@ async function loadFeaturedVehicles() {
     const grid = document.getElementById('featured-vehicles-grid');
     if (!grid) return;
     
-    // Show loading
     grid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading vehicles...</div>';
     
     try {
-        // Use global vehicles from Google Sheet
         const vehicles = window.allVehicles.filter(v => v.status === 'AVAILABLE').slice(0, 4);
         
-        console.log("🏆 Featured vehicles from Google Sheet:", vehicles);
+        console.log("🏆 Featured vehicles:", vehicles);
         
         if (vehicles.length === 0) {
             grid.innerHTML = '<p class="no-vehicles">No featured vehicles available</p>';
@@ -188,115 +175,55 @@ function setActiveNavLink() {
 }
 
 // ========== MODAL FUNCTIONS ==========
-
-// Initialize modal close handlers
-function initModalHandlers() {
-    const modal = document.getElementById('vehicle-modal');
-    if (!modal) return;
-    
-    const closeBtn = modal.querySelector('.modal-close');
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-    }
-    
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-    
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('show')) {
-            closeModal();
-        }
-    });
-}
-
-// Make openVehicleModal globally available
 window.openVehicleModal = function(vehicleId) {
     console.log("🔍 Opening modal for vehicle ID:", vehicleId);
     
-    // Convert to number if it's a string
     const id = typeof vehicleId === 'string' ? parseInt(vehicleId) : vehicleId;
-    
-    // Find vehicle in global storage (from Google Sheet)
     const vehicle = window.allVehicles.find(v => v.id === id);
     
     if (!vehicle) {
-        console.error("❌ Vehicle not found! ID:", id);
-        console.log("Available vehicles from Google Sheet:", window.allVehicles);
-        alert("Vehicle not found!");
+        console.error("❌ Vehicle not found!");
         return;
     }
-    
-    console.log("✅ Found vehicle from Google Sheet:", vehicle.name);
     
     const modal = document.getElementById('vehicle-modal');
     const modalBody = document.getElementById('modal-body');
     const modalTitle = document.getElementById('modal-title');
     
-    if (!modal || !modalBody || !modalTitle) {
-        console.error("❌ Modal elements not found!");
-        return;
-    }
+    if (!modal || !modalBody || !modalTitle) return;
     
     modalTitle.textContent = vehicle.name;
     
     // Generate images HTML
     let imagesHtml = '';
     if (vehicle.images && vehicle.images.length > 0) {
-        // Filter out empty images
-        const validImages = vehicle.images.filter(img => img && img !== 'https://placehold.co/600x400?text=No+Image' && img.includes('http'));
-        
-        if (validImages.length > 0) {
-            // Main image with error handling
-            const mainImage = validImages[0];
-            
-            // Thumbnails
-            const thumbnailsHtml = validImages.length > 1 ? `
+        imagesHtml = `
+            <div class="modal-vehicle-gallery">
+                <div class="modal-main-image">
+                    <img src="${vehicle.images[0]}" alt="${vehicle.name}" id="modal-main-img">
+                </div>
                 <div class="modal-thumbnails">
-                    ${validImages.map((img, index) => `
+                    ${vehicle.images.map((img, index) => `
                         <img src="${img}" alt="Thumbnail ${index + 1}" 
                              class="modal-thumbnail ${index === 0 ? 'active' : ''}"
-                             onclick="window.changeModalImage('${img}', this)"
-                             onerror="this.src='https://placehold.co/80x80/0A1929/FFFFFF?text=No+Image'">
+                             onclick="changeModalImage('${img}', this)">
                     `).join('')}
                 </div>
-            ` : '';
-            
-            imagesHtml = `
-                <div class="modal-vehicle-gallery">
-                    <div class="modal-main-image">
-                        <img src="${mainImage}" alt="${vehicle.name}" id="modal-main-img" 
-                             onerror="this.src='https://placehold.co/600x400/0A1929/FFFFFF?text=Image+Not+Found'">
-                    </div>
-                    ${thumbnailsHtml}
-                </div>
-            `;
-        } else {
-            imagesHtml = `
-                <div class="modal-vehicle-gallery">
-                    <div class="modal-main-image">
-                        <img src="https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image+Available" alt="No Image">
-                    </div>
-                </div>
-            `;
-        }
+            </div>
+        `;
     } else {
         imagesHtml = `
             <div class="modal-vehicle-gallery">
                 <div class="modal-main-image">
-                    <img src="https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image+Available" alt="No Image">
+                    <img src="${vehicle.image}" alt="${vehicle.name}">
                 </div>
             </div>
         `;
     }
     
-    // YouTube button only if link exists
     const youtubeButton = vehicle.youtube && vehicle.youtube.trim() !== '' ? 
         `<a href="${vehicle.youtube}" target="_blank" class="btn-youtube">
-            <i class="fab fa-youtube"></i> Watch Full Review on YouTube
+            <i class="fab fa-youtube"></i> Watch Review on YouTube
         </a>` : '';
     
     modalBody.innerHTML = `
@@ -340,24 +267,14 @@ window.openVehicleModal = function(vehicleId) {
     document.body.style.overflow = 'hidden';
 };
 
-// Function to change modal image
 window.changeModalImage = function(src, element) {
-    console.log("Changing image to:", src);
     const mainImg = document.getElementById('modal-main-img');
-    if (mainImg) {
-        mainImg.src = src;
-    }
+    if (mainImg) mainImg.src = src;
     
-    // Update active class
-    document.querySelectorAll('.modal-thumbnail').forEach(t => {
-        t.classList.remove('active');
-    });
-    if (element) {
-        element.classList.add('active');
-    }
+    document.querySelectorAll('.modal-thumbnail').forEach(t => t.classList.remove('active'));
+    element.classList.add('active');
 };
 
-// Share function
 window.shareVehicle = function(vehicleId) {
     const vehicle = window.allVehicles.find(v => v.id === vehicleId);
     if (!vehicle) return;
@@ -365,34 +282,37 @@ window.shareVehicle = function(vehicleId) {
     const shareText = `Check out this ${vehicle.name} (${vehicle.year}) priced at ${formatPrice(vehicle.price)}`;
     
     if (navigator.share) {
-        navigator.share({
-            title: vehicle.name,
-            text: shareText,
-            url: window.location.href
-        }).catch(() => {
-            copyToClipboard(shareText);
-        });
+        navigator.share({ title: vehicle.name, text: shareText, url: window.location.href });
     } else {
-        copyToClipboard(shareText);
+        navigator.clipboard.writeText(shareText);
+        alert('Vehicle details copied to clipboard!');
     }
 };
 
-// Helper function to copy to clipboard
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Vehicle details copied to clipboard!');
-    }).catch(() => {
-        alert('Press Ctrl+C to copy: ' + text);
-    });
-}
-
-// Close modal function
-function closeModal() {
+// Modal close handlers
+document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('vehicle-modal');
-    if (modal) {
-        modal.classList.remove('show');
-        document.body.style.overflow = 'auto';
+    if (!modal) return;
+    
+    const closeBtn = modal.querySelector('.modal-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        });
     }
-}
-
-// ========== END MODAL FUNCTIONS ==========
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+    });
+});
