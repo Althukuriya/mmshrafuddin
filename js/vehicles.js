@@ -183,12 +183,12 @@
         </div>
     </div>
 
-    <!-- SCRIPTS - CORRECT ORDER -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="js/data.js"></script>
-    <script src="js/main.js"></script>  <!-- THIS CONTAINS MODAL FUNCTIONS -->
-    <script src="js/vehicles.js"></script>
-    <script src="js/animations.js"></script>
+   <!-- In vehicles.html, use this script order -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>  <!-- This has ALL functions + Google Sheet data -->
+<script src="js/vehicles.js"></script>
+<script src="js/animations.js"></script>
     
     <script>
         // Mobile menu toggle function
@@ -223,3 +223,4 @@
     </script>
 </body>
 </html>
+
