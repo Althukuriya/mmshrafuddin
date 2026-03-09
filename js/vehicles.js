@@ -1,210 +1,225 @@
-// js/data.js
-// Google Sheets CSV URL - YOUR NEW PUBLISHED LINK
-const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSE1pstK8BTamjt-LTSDJ40d6OdayNmT5NQp1Y4inx6pvMuBQ68at3tbkJDyy6NiqMfOZ1mB9AXE6_v/pub?gid=1146903494&single=true&output=csv";
+<!-- vehicles.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Vehicles - AutoMarket</title>
+    <meta name="description" content="Browse our collection of used cars and bikes. Filter by type, price, and more.">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <div class="announcement-content">
+            <div class="announcement-slide">🔥 New arrivals this week: 2022 Honda Civic & 2023 Yamaha R15</div>
+            <div class="announcement-slide">📺 Latest bike reviews on YouTube - Subscribe now!</div>
+            <div class="announcement-slide">💰 Special offers: 0% EMI for 6 months on select vehicles</div>
+        </div>
+    </div>
 
-// Fallback demo data (ONLY used if fetch fails)
-const DEMO_VEHICLES = [
-    {
-        id: 1,
-        name: "DEMO: Honda Bike",
-        type: "Bike",
-        year: 2022,
-        price: 20000,
-        image: "https://images.unsplash.com/photo-1609630875171-b1321377ee65",
-        images: ["https://images.unsplash.com/photo-1609630875171-b1321377ee65"],
-        status: "AVAILABLE",
-        youtube: ""
-    },
-    {
-        id: 2,
-        name: "DEMO: Yamaha Bike",
-        type: "Bike",
-        year: 2023,
-        price: 39000,
-        image: "https://plus.unsplash.com/premium_photo-1661963005592-182d602c6a3f",
-        images: ["https://plus.unsplash.com/premium_photo-1661963005592-182d602c6a3f"],
-        status: "SOLD",
-        youtube: "https://youtu.be/tRSLXR4lVvg"
-    }
-];
+    <!-- Sticky Header -->
+    <header class="sticky-header">
+        <nav class="nav-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/150x40/0A1929/FFFFFF?text=AutoMarket" alt="AutoMarket Logo">
+                </a>
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="vehicles.html?type=Bike" class="active">Buy Bike</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
 
-// MAIN FUNCTION - FETCHES FROM GOOGLE SHEETS
-async function fetchVehiclesFromSheet() {
-    console.log("🔍 ATTEMPTING TO FETCH FROM GOOGLE SHEETS...");
-    console.log("URL:", GOOGLE_SHEETS_CSV_URL);
-    
-    try {
-        // Add cache busting
-        const url = GOOGLE_SHEETS_CSV_URL + '&_=' + new Date().getTime();
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache'
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const csvText = await response.text();
-        console.log("✅ RAW CSV DATA RECEIVED");
-        console.log("First 500 chars:", csvText.substring(0, 500));
-        
-        if (csvText.length < 10) {
-            throw new Error("CSV data is too short");
-        }
-        
-        const vehicles = parseCSV(csvText);
-        
-        if (vehicles.length > 0) {
-            console.log(`✅ SUCCESS: Loaded ${vehicles.length} vehicles FROM GOOGLE SHEETS`);
-            return vehicles;
-        } else {
-            console.log("⚠️ No vehicles found in sheet, using DEMO data");
-            return DEMO_VEHICLES;
-        }
-    } catch (error) {
-        console.error("❌ FAILED to fetch from Google Sheets:", error);
-        console.log("⚠️ Using DEMO data instead");
-        return DEMO_VEHICLES;
-    }
-}
+            <div class="nav-right">
+                <a href="https://youtube.com/@yourchannel" target="_blank" class="social-icon youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://instagram.com/yourprofile" target="_blank" class="social-icon instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="vehicles.html" class="cta-button">View Vehicles <i class="fas fa-arrow-right"></i></a>
+            </div>
 
-// Parse CSV to vehicle objects - UPDATED for new column names
-function parseCSV(csvText) {
-    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Page Header -->
+        <section class="vehicles-page-header">
+            <div class="container">
+                <h1 id="page-title">Find Your Perfect Vehicle</h1>
+                <p id="page-subtitle">Browse through our collection of quality used cars and bikes</p>
+            </div>
+        </section>
+
+        <!-- Vehicles Section -->
+        <section class="vehicles-page">
+            <div class="container">
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">All Vehicles</button>
+                        <button class="filter-tab" data-filter="Car">Cars</button>
+                        <button class="filter-tab" data-filter="Bike">Bikes</button>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <div class="search-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="live-search" placeholder="Search by name, model, year..." class="search-input">
+                            <button class="clear-search" id="clear-search"><i class="fas fa-times"></i></button>
+                        </div>
+                        
+                        <div class="sort-wrapper">
+                            <select id="sort-price" class="sort-select">
+                                <option value="default">Sort by: Default</option>
+                                <option value="low-high">Price: Low to High</option>
+                                <option value="high-low">Price: High to Low</option>
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Count -->
+                <div class="results-header">
+                    <div class="results-count" id="results-count">Showing <span>0</span> vehicles</div>
+                </div>
+
+                <!-- Vehicles Grid -->
+                <div class="vehicles-grid-container">
+                    <div id="vehicles-grid" class="vehicles-grid"></div>
+                    <div id="no-results" class="no-results" style="display: none;">
+                        <i class="fas fa-search"></i>
+                        <h3>No Vehicles Found</h3>
+                        <p>Try adjusting your search or filter criteria</p>
+                        <button class="btn-outline" onclick="resetAllFilters()">Clear All Filters</button>
+                    </div>
+                    <div id="loading-spinner" class="loading-spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading vehicles...
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="modern-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <img src="https://placehold.co/150x40/FFFFFF/0A1929?text=AutoMarket" alt="AutoMarket Logo" class="footer-logo">
+                    <p>Your trusted marketplace for quality used cars and bikes since 2015. Over 10,000 satisfied customers.</p>
+                    <div class="social-links">
+                        <a href="https://youtube.com/@yourchannel" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://instagram.com/yourprofile" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="vehicles.html">All Vehicles</a></li>
+                        <li><a href="vehicles.html?type=Car">Cars</a></li>
+                        <li><a href="vehicles.html?type=Bike">Bikes</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Popular Blog Posts</h4>
+                    <ul>
+                        <li><a href="blog-posts/buying-guide.html">Used Car Buying Guide</a></li>
+                        <li><a href="blog-posts/bike-maintenance.html">Bike Maintenance Tips</a></li>
+                        <li><a href="blog-posts/comparison.html">Car vs Bike: What to Choose?</a></li>
+                        <li><a href="blog-posts/financing.html">Financing Options Explained</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Info</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Auto Street, City, State</li>
+                        <li><i class="fas fa-phone"></i> +91 76749 05538</li>
+                        <li><i class="fas fa-envelope"></i> info@automarket.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 AutoMarket. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/917674905538?text=Hi%20AutoMarket%2C%20I'm%20interested%20in%20buying%20a%20vehicle" 
+       class="whatsapp-float" 
+       target="_blank"
+       aria-label="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Vehicle Detail Modal -->
+    <div class="modal" id="vehicle-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Vehicle Details</h2>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS - CORRECT ORDER -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>  <!-- THIS CONTAINS MODAL FUNCTIONS -->
+    <script src="js/vehicles.js"></script>
+    <script src="js/animations.js"></script>
     
-    if (lines.length < 2) {
-        console.log("CSV has no data rows");
-        return [];
-    }
-    
-    // Get headers
-    const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
-    console.log("📋 CSV Headers from sheet:", headers);
-    
-    const vehicles = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-        try {
-            // Parse CSV line properly
-            const values = [];
-            let currentValue = '';
-            let insideQuotes = false;
+    <script>
+        // Mobile menu toggle function
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburger = document.querySelector('.hamburger');
+            const navMenu = document.querySelector('.nav-menu');
             
-            for (let char of lines[i]) {
-                if (char === '"' && !insideQuotes) {
-                    insideQuotes = true;
-                } else if (char === '"' && insideQuotes) {
-                    insideQuotes = false;
-                } else if (char === ',' && !insideQuotes) {
-                    values.push(currentValue);
-                    currentValue = '';
-                } else {
-                    currentValue += char;
-                }
-            }
-            values.push(currentValue);
-            
-            // Helper function to get value by column name
-            const getValue = (columnName) => {
-                const index = headers.findIndex(h => 
-                    h.toLowerCase().includes(columnName.toLowerCase()) || 
-                    columnName.toLowerCase().includes(h.toLowerCase())
-                );
-                if (index !== -1 && values[index]) {
-                    return values[index].replace(/^"|"$/g, '').trim();
-                }
-                return '';
-            };
-            
-            // Get values using NEW column names
-            const name = getValue('Vehicle Name');
-            const type = getValue('Vehicle Type');
-            const yearStr = getValue('Model Year');
-            const priceStr = getValue('Price');
-            const status = getValue('STATUS');
-            
-            // Get YouTube link
-            let youtube = getValue('YouTube Video Link');
-            
-            // Get images - using NEW column names
-            const images = [];
-            
-            // Main Image
-            const mainImg = getValue('Vehicle Image Link (Main Image)');
-            if (mainImg && mainImg.trim() !== '' && mainImg.startsWith('http')) {
-                images.push(mainImg);
-            }
-            
-            // Image 2
-            const img2 = getValue('Vehicle Image 2 Link');
-            if (img2 && img2.trim() !== '' && img2.startsWith('http')) {
-                images.push(img2);
-            }
-            
-            // Images 3-5
-            const img3 = getValue('Vehicle Image 3');
-            if (img3 && img3.trim() !== '' && img3.startsWith('http')) {
-                images.push(img3);
-            }
-            
-            const img4 = getValue('Vehicle Image 4');
-            if (img4 && img4.trim() !== '' && img4.startsWith('http')) {
-                images.push(img4);
-            }
-            
-            const img5 = getValue('Vehicle Image 5');
-            if (img5 && img5.trim() !== '' && img5.startsWith('http')) {
-                images.push(img5);
-            }
-            
-            // Parse year and price
-            const year = parseInt(yearStr) || 2023;
-            const price = parseFloat(priceStr) || 0;
-            
-            // Only add if we have valid data
-            if (name && name !== 'Vehicle Name' && price > 0) {
-                const vehicle = {
-                    id: i,
-                    name: name,
-                    type: type || 'Car',
-                    year: year,
-                    price: price,
-                    image: images.length > 0 ? images[0] : 'https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image',
-                    images: images.length > 0 ? images : ['https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image'],
-                    status: status || 'AVAILABLE',
-                    youtube: youtube || '',
-                };
+            if (hamburger && navMenu) {
+                hamburger.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                    document.body.classList.toggle('menu-open');
+                });
                 
-                vehicles.push(vehicle);
-                console.log(`  → Parsed: ${vehicle.name} (${vehicle.status})`);
+                document.querySelectorAll('.nav-menu a').forEach(link => {
+                    link.addEventListener('click', function() {
+                        hamburger.classList.remove('active');
+                        navMenu.classList.remove('active');
+                        document.body.classList.remove('menu-open');
+                    });
+                });
             }
-        } catch (err) {
-            console.warn(`Error parsing row ${i}:`, err);
+        });
+
+        // Reset filters function
+        function resetAllFilters() {
+            document.getElementById('live-search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
+            document.getElementById('sort-price').value = 'default';
+            document.querySelector('.filter-tab[data-filter="all"]').click();
         }
-    }
-    
-    console.log(`📊 Total vehicles parsed: ${vehicles.length}`);
-    return vehicles;
-}
-
-// Get YouTube videos from vehicles
-function getYouTubeVideosFromVehicles(vehicles) {
-    return vehicles
-        .filter(v => v.youtube && v.youtube.trim() !== '')
-        .slice(0, 3)
-        .map(v => ({
-            id: v.id,
-            title: v.name,
-            thumbnail: v.image,
-            videoUrl: v.youtube
-        }));
-}
-
-// Format price in Rupees
-function formatPrice(price) {
-    if (!price) return '₹0';
-    return `₹${price.toLocaleString('en-IN')}`;
-}
+    </script>
+</body>
+</html>
