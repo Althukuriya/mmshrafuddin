@@ -170,7 +170,7 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
-    <!-- Vehicle Detail Modal - MUST BE HERE -->
+    <!-- Vehicle Detail Modal -->
     <div class="modal" id="vehicle-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -183,15 +183,12 @@
         </div>
     </div>
 
-    <!-- SCRIPTS - CORRECT ORDER -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="js/data.js"></script>      <!-- Loads fetchVehiclesFromSheet FIRST -->
-    <script src="js/main.js"></script>       <!-- Has modal functions -->
-    <script src="js/vehicles.js"></script>   <!-- Uses fetchVehiclesFromSheet -->
+    <script src="js/data.js"></script>
+    <script src="js/vehicles.js"></script>
     <script src="js/animations.js"></script>
-
     <script>
-        // Mobile menu toggle function
+        // Mobile menu toggle function (added directly to ensure it works)
         document.addEventListener('DOMContentLoaded', function() {
             const hamburger = document.querySelector('.hamburger');
             const navMenu = document.querySelector('.nav-menu');
@@ -203,6 +200,7 @@
                     document.body.classList.toggle('menu-open');
                 });
                 
+                // Close menu when clicking a link
                 document.querySelectorAll('.nav-menu a').forEach(link => {
                     link.addEventListener('click', function() {
                         hamburger.classList.remove('active');
@@ -214,12 +212,12 @@
         });
 
         // Reset filters function
-        window.resetAllFilters = function() {
+        function resetAllFilters() {
             document.getElementById('live-search').value = '';
             document.getElementById('clear-search').style.display = 'none';
             document.getElementById('sort-price').value = 'default';
             document.querySelector('.filter-tab[data-filter="all"]').click();
-        };
+        }
     </script>
 </body>
 </html>
