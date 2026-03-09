@@ -1,267 +1,141 @@
-// js/vehicles.js
-let filteredVehicles = [];
+// js/data.js
+// Global variable to store vehicles (accessible everywhere)
+window.allVehicles = [];
 
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🚗 Vehicles page loaded");
-    
-    // Initialize AOS
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            once: true
-        });
-    }
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSE1pstK8BTamjt-LTSDJ40d6OdayNmT5NQp1Y4inx6pvMuBQ68at3tbkJDyy6NiqMfOZ1mB9AXE6_v/pub?gid=1146903494&single=true&output=csv";
 
-    // Initialize mobile menu
-    initMobileMenu();
-
-    // Load vehicles
-    await loadVehicles();
-    
-    // Initialize filters
-    initFilters();
-    initLiveSearch();
-    initSort();
-    
-    // Check URL for type parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const typeParam = urlParams.get('type');
-    if (typeParam) {
-        const titleEl = document.getElementById('page-title');
-        const subtitleEl = document.getElementById('page-subtitle');
-        if (titleEl) titleEl.textContent = typeParam === 'Car' ? 'Browse Cars' : 'Browse Bikes';
-        if (subtitleEl) subtitleEl.textContent = `Find your perfect ${typeParam === 'Car' ? 'car' : 'bike'} from our collection`;
-        
-        const tab = document.querySelector(`.filter-tab[data-filter="${typeParam}"]`);
-        if (tab) tab.click();
-    }
-});
-
-// Mobile menu initialization
-function initMobileMenu() {
-    const hamburger = document.querySelector('.hamburger');
-    const navMenu = document.querySelector('.nav-menu');
-    
-    if (hamburger && navMenu) {
-        hamburger.addEventListener('click', function() {
-            this.classList.toggle('active');
-            navMenu.classList.toggle('active');
-            document.body.classList.toggle('menu-open');
-        });
-        
-        document.querySelectorAll('.nav-menu a').forEach(link => {
-            link.addEventListener('click', function() {
-                hamburger.classList.remove('active');
-                navMenu.classList.remove('active');
-                document.body.classList.remove('menu-open');
-            });
-        });
-    }
-}
-
-async function loadVehicles() {
-    const grid = document.getElementById('vehicles-grid');
-    const spinner = document.getElementById('loading-spinner');
-    const noResults = document.getElementById('no-results');
-    
-    if (!grid) {
-        console.error("Vehicles grid not found!");
-        return;
-    }
-    
-    // Show spinner
-    if (spinner) spinner.style.display = 'block';
-    if (grid) grid.style.display = 'none';
-    if (noResults) noResults.style.display = 'none';
+async function fetchVehiclesFromSheet() {
+    console.log("🔍 Fetching vehicles from Google Sheets...");
+    console.log("URL:", SHEET_URL);
     
     try {
-        console.log("📡 Fetching vehicles from Google Sheets...");
+        // Add timestamp to prevent caching
+        const url = SHEET_URL + "&t=" + Date.now();
+        console.log("Fetching from:", url);
         
-        // Check if fetchVehiclesFromSheet exists
-        if (typeof fetchVehiclesFromSheet !== 'function') {
-            console.error("fetchVehiclesFromSheet function not found!");
-            throw new Error("Data function missing");
+        const response = await fetch(url);
+        console.log("Response status:", response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Fetch vehicles
-        const vehicles = await fetchVehiclesFromSheet();
+        const text = await response.text();
+        console.log("✅ Data received, length:", text.length);
+        console.log("First 200 chars:", text.substring(0, 200));
         
-        console.log(`✅ Loaded ${vehicles.length} vehicles`);
+        if (text.length < 10) {
+            throw new Error("Data too short - sheet might be empty");
+        }
+
+        const lines = text.split("\n");
+        console.log("Number of lines:", lines.length);
+        console.log("Header row:", lines[0]);
         
-        if (vehicles.length > 0) {
-            filteredVehicles = [...vehicles];
-            renderVehicles(filteredVehicles);
-            updateResultsCount(filteredVehicles.length);
-        } else {
-            if (grid) {
-                grid.innerHTML = '<p class="no-vehicles">No vehicles available</p>';
-                grid.style.display = 'block';
+        const vehicles = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            // Skip empty lines
+            if (!lines[i].trim()) continue;
+            
+            // Parse CSV properly (handling quotes)
+            const row = parseCSVLine(lines[i]);
+            console.log(`Row ${i} values:`, row);
+            
+            // Check if we have valid data
+            if (!row[1] || row[1] === '') {
+                console.log(`Row ${i} skipped: no name`);
+                continue;
             }
+
+            const status = (row[11] || "AVAILABLE").trim().toUpperCase();
+            
+            // Skip hidden vehicles
+            if (status === "HIDE") {
+                console.log(`Row ${i} skipped: HIDE status`);
+                continue;
+            }
+
+            // Collect images
+            const images = [];
+            if (row[5] && row[5].startsWith('http')) images.push(row[5]);
+            if (row[6] && row[6].startsWith('http')) images.push(row[6]);
+            if (row[7] && row[7].startsWith('http')) images.push(row[7]);
+            if (row[8] && row[8].startsWith('http')) images.push(row[8]);
+            if (row[9] && row[9].startsWith('http')) images.push(row[9]);
+
+            const vehicle = {
+                id: i,
+                name: row[1] || 'Unknown Vehicle',
+                type: row[2] || 'Car',
+                year: parseInt(row[3]) || 2023,
+                price: parseFloat(row[4]) || 0,
+                image: images[0] || "https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image",
+                images: images.length ? images : ["https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image"],
+                youtube: row[10] || "",
+                status: status
+            };
+            
+            vehicles.push(vehicle);
+            console.log(`  ✅ Added: ${vehicle.name} (${vehicle.status})`);
+        }
+
+        console.log(`📊 Total vehicles loaded: ${vehicles.length}`);
+        
+        // Store in global variable
+        window.allVehicles = vehicles;
+        
+        if (vehicles.length === 0) {
+            console.warn("⚠️ No vehicles were parsed from the data!");
         }
         
-        if (spinner) spinner.style.display = 'none';
-        
+        return vehicles;
+
     } catch (error) {
-        console.error('❌ Error loading vehicles:', error);
-        if (spinner) spinner.style.display = 'none';
-        if (grid) {
-            grid.innerHTML = '<div class="error">Error loading vehicles. Please try again.</div>';
-            grid.style.display = 'block';
+        console.error("❌ Sheet load failed:", error);
+        console.error("Error details:", error.message);
+        return [];
+    }
+}
+
+// Helper function to parse CSV line properly
+function parseCSVLine(line) {
+    const values = [];
+    let currentValue = '';
+    let insideQuotes = false;
+    
+    for (let char of line) {
+        if (char === '"' && !insideQuotes) {
+            insideQuotes = true;
+        } else if (char === '"' && insideQuotes) {
+            insideQuotes = false;
+        } else if (char === ',' && !insideQuotes) {
+            values.push(currentValue);
+            currentValue = '';
+        } else {
+            currentValue += char;
         }
     }
+    values.push(currentValue); // Add last value
+    
+    return values;
 }
 
-function renderVehicles(vehicles) {
-    const grid = document.getElementById('vehicles-grid');
-    const noResults = document.getElementById('no-results');
-    
-    if (!grid) return;
-
-    if (vehicles.length === 0) {
-        if (grid) grid.style.display = 'none';
-        if (noResults) noResults.style.display = 'block';
-        return;
-    }
-
-    if (grid) grid.style.display = 'grid';
-    if (noResults) noResults.style.display = 'none';
-    
-    grid.innerHTML = vehicles.map(vehicle => `
-        <div class="vehicle-card" onclick="openVehicleModal(${vehicle.id})">
-            <div class="vehicle-image">
-                <img src="${vehicle.image || 'https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image'}" 
-                     alt="${vehicle.name}" 
-                     loading="lazy"
-                     onerror="this.src='https://placehold.co/600x400/0A1929/FFFFFF?text=Image+Error'">
-                <span class="vehicle-badge ${(vehicle.status || 'available').toLowerCase()}">${vehicle.status || 'AVAILABLE'}</span>
-            </div>
-            <div class="vehicle-info">
-                <h3 class="vehicle-name">${vehicle.name}</h3>
-                <p class="vehicle-year">${vehicle.year}</p>
-                <p class="vehicle-price">${formatPrice(vehicle.price)}</p>
-            </div>
-        </div>
-    `).join('');
+// Format price in INR
+function formatPrice(price) {
+    if (!price) return '₹0';
+    return "₹" + Number(price).toLocaleString("en-IN");
 }
 
-function initFilters() {
-    const tabs = document.querySelectorAll('.filter-tab');
-    if (!tabs.length) {
-        console.log("No filter tabs found");
-        return;
-    }
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
-            const filterType = tab.dataset.filter;
-            
-            if (filterType === 'all') {
-                filteredVehicles = [...window.allVehicles];
-            } else {
-                filteredVehicles = window.allVehicles.filter(v => 
-                    v.type && v.type.toLowerCase() === filterType.toLowerCase()
-                );
-            }
-            
-            applySearchAndSort();
-        });
-    });
+// Extract YouTube videos from vehicles
+function getYouTubeVideosFromVehicles(vehicles) {
+    return vehicles
+        .filter(v => v.youtube && v.youtube.trim() !== "")
+        .slice(0, 3)
+        .map(v => ({
+            id: v.id,
+            title: v.name,
+            thumbnail: v.image,
+            videoUrl: v.youtube
+        }));
 }
-
-function initLiveSearch() {
-    const searchInput = document.getElementById('live-search');
-    const clearBtn = document.getElementById('clear-search');
-    
-    if (!searchInput || !clearBtn) return;
-    
-    searchInput.addEventListener('input', (e) => {
-        clearBtn.style.display = e.target.value.length > 0 ? 'block' : 'none';
-        applySearchAndSort();
-    });
-    
-    clearBtn.addEventListener('click', () => {
-        searchInput.value = '';
-        clearBtn.style.display = 'none';
-        applySearchAndSort();
-    });
-}
-
-function initSort() {
-    const sortSelect = document.getElementById('sort-price');
-    if (sortSelect) {
-        sortSelect.addEventListener('change', applySearchAndSort);
-    }
-}
-
-function applySearchAndSort() {
-    let vehicles = [...window.allVehicles];
-    
-    // Apply type filter
-    const activeTab = document.querySelector('.filter-tab.active');
-    if (activeTab) {
-        const filterType = activeTab.dataset.filter;
-        if (filterType !== 'all') {
-            vehicles = vehicles.filter(v => 
-                v.type && v.type.toLowerCase() === filterType.toLowerCase()
-            );
-        }
-    }
-    
-    // Apply search
-    const searchTerm = document.getElementById('live-search')?.value.toLowerCase();
-    if (searchTerm) {
-        vehicles = vehicles.filter(v => 
-            (v.name && v.name.toLowerCase().includes(searchTerm)) ||
-            (v.year && v.year.toString().includes(searchTerm))
-        );
-    }
-    
-    // Apply sort
-    const sortBy = document.getElementById('sort-price')?.value;
-    if (sortBy === 'low-high') {
-        vehicles.sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'high-low') {
-        vehicles.sort((a, b) => b.price - a.price);
-    } else if (sortBy === 'newest') {
-        vehicles.sort((a, b) => b.year - a.year);
-    } else if (sortBy === 'oldest') {
-        vehicles.sort((a, b) => a.year - b.year);
-    }
-    
-    filteredVehicles = vehicles;
-    renderVehicles(vehicles);
-    updateResultsCount(vehicles.length);
-}
-
-function updateResultsCount(count) {
-    const countSpan = document.querySelector('.results-count span');
-    if (countSpan) {
-        countSpan.textContent = count;
-    }
-}
-
-function resetAllFilters() {
-    const searchInput = document.getElementById('live-search');
-    const clearBtn = document.getElementById('clear-search');
-    const sortSelect = document.getElementById('sort-price');
-    
-    if (searchInput) searchInput.value = '';
-    if (clearBtn) clearBtn.style.display = 'none';
-    if (sortSelect) sortSelect.value = 'default';
-    
-    const allTab = document.querySelector('.filter-tab[data-filter="all"]');
-    if (allTab) {
-        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-        allTab.classList.add('active');
-    }
-    
-    filteredVehicles = [...window.allVehicles];
-    renderVehicles(filteredVehicles);
-    updateResultsCount(filteredVehicles.length);
-}
-
-// Make functions globally available
-window.resetAllFilters = resetAllFilters;
