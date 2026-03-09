@@ -1,0 +1,300 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoMarket - Used Cars & Bikes Marketplace</title>
+    <meta name="description" content="Buy quality used cars and bikes at best prices. Verified vehicles, trusted dealership since 2015.">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <div class="announcement-content">
+            <div class="announcement-slide">🔥 New arrivals this week: 2022 Honda Civic & 2023 Yamaha R15</div>
+            <div class="announcement-slide">📺 Latest bike reviews on YouTube - Subscribe now!</div>
+            <div class="announcement-slide">💰 Special offers: 0% EMI for 6 months on select vehicles</div>
+        </div>
+    </div>
+
+    <!-- Sticky Header -->
+    <header class="sticky-header">
+        <nav class="nav-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/150x40/0A1929/FFFFFF?text=AutoMarket" alt="AutoMarket Logo">
+                </a>
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="vehicles.html?type=Bike">Buy Bike</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div class="nav-right">
+                <a href="https://youtube.com/@yourchannel" target="_blank" class="social-icon youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://instagram.com/yourprofile" target="_blank" class="social-icon instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="vehicles.html" class="cta-button">View Vehicles <i class="fas fa-arrow-right"></i></a>
+            </div>
+
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Banner Slider - WITH PROPER MARGIN -->
+        <section class="hero-banner-slider">
+            <div class="container"> <!-- Added container for proper margin -->
+                <div class="banner-slider-container">
+                    <div class="banner-slider-track" id="banner-track">
+                        <div class="banner-slide">
+                            <a href="vehicles.html?type=Car">
+                                <img src="https://placehold.co/1400x600/1E88E5/FFFFFF?text=New+Cars+2024" alt="New Cars 2024">
+                            </a>
+                        </div>
+                        <div class="banner-slide">
+                            <a href="vehicles.html?type=Bike">
+                                <img src="https://placehold.co/1400x600/FF6B35/FFFFFF?text=New+Bikes+2024" alt="New Bikes 2024">
+                            </a>
+                        </div>
+                        <div class="banner-slide">
+                            <a href="special-offers.html">
+                                <img src="https://placehold.co/1400x600/0A1929/FFFFFF?text=Special+Offers" alt="Special Offers">
+                            </a>
+                        </div>
+                        <div class="banner-slide">
+                            <a href="financing.html">
+                                <img src="https://placehold.co/1400x600/4CAF50/FFFFFF?text=Easy+Financing" alt="Easy Financing">
+                            </a>
+                        </div>
+                        <div class="banner-slide">
+                            <a href="video-gallery.html">
+                                <img src="https://placehold.co/1400x600/FF5722/FFFFFF?text=YouTube+Reviews" alt="YouTube Reviews">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="banner-slider-dots" id="banner-dots"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Vehicles Section -->
+        <section class="featured-vehicles">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">Featured Vehicles</h2>
+                <div id="featured-vehicles-grid" class="vehicles-grid"></div>
+                <div class="view-all">
+                    <a href="vehicles.html" class="btn-outline">View All Vehicles <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vehicle Categories -->
+        <section class="categories">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">Browse by Category</h2>
+                <div class="categories-grid">
+                    <a href="vehicles.html?type=Car" class="category-card" data-aos="zoom-in">
+                        <i class="fas fa-car category-icon"></i>
+                        <h3>Cars</h3>
+                        <p>Sedans, SUVs, Hatchbacks & More</p>
+                    </a>
+                    <a href="vehicles.html?type=Bike" class="category-card" data-aos="zoom-in" data-aos-delay="100">
+                        <i class="fas fa-motorcycle category-icon"></i>
+                        <h3>Bikes</h3>
+                        <p>Sport, Cruiser, Scooters & More</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest YouTube Reviews Section -->
+        <section class="youtube-section">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">Latest YouTube Reviews</h2>
+                <div id="youtube-grid" class="youtube-grid"></div>
+                <div class="view-all">
+                    <a href="https://youtube.com/@yourchannel" target="_blank" class="btn-outline">Watch All Videos <i class="fas fa-play"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">Why Choose Us</h2>
+                <div class="features-grid">
+                    <div class="feature-card" data-aos="fade-up">
+                        <i class="fas fa-check-circle feature-icon"></i>
+                        <h3>Verified Vehicles</h3>
+                        <p>Every vehicle undergoes 200+ point inspection by certified mechanics</p>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                        <i class="fas fa-tag feature-icon"></i>
+                        <h3>Best Market Price</h3>
+                        <p>Price match guarantee on all vehicles with transparent pricing</p>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                        <i class="fas fa-handshake feature-icon"></i>
+                        <h3>Trusted Dealership</h3>
+                        <p>10,000+ happy customers with 5-star ratings since 2015</p>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                        <i class="fas fa-shield-alt feature-icon"></i>
+                        <h3>Honest Deals</h3>
+                        <p>No hidden charges, complete transparency in every transaction</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="testimonials">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">What Our Customers Say</h2>
+                <div class="testimonials-carousel">
+                    <div class="testimonial-card" data-aos="fade-right">
+                        <img src="https://placehold.co/100x100/FF6B35/FFFFFF?text=RK" alt="Customer" class="testimonial-img">
+                        <p class="testimonial-text">"Best experience buying a used car. The vehicle was in perfect condition and the process was smooth. Highly recommended!"</p>
+                        <h4>Rajesh Kumar</h4>
+                        <div class="rating">★★★★★</div>
+                    </div>
+                    <div class="testimonial-card" data-aos="fade-up">
+                        <img src="https://placehold.co/100x100/1E88E5/FFFFFF?text=PS" alt="Customer" class="testimonial-img">
+                        <p class="testimonial-text">"Found my dream bike at an amazing price. Their YouTube reviews helped me decide. Great team and service!"</p>
+                        <h4>Priya Singh</h4>
+                        <div class="rating">★★★★★</div>
+                    </div>
+                    <div class="testimonial-card" data-aos="fade-left">
+                        <img src="https://placehold.co/100x100/0A1929/FFFFFF?text=AM" alt="Customer" class="testimonial-img">
+                        <p class="testimonial-text">"Great selection of vehicles and honest dealership. The financing options made it easy to own my first car."</p>
+                        <h4>Arun Mehta</h4>
+                        <div class="rating">★★★★★</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Brands Section -->
+        <section class="brands">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">Brands We Offer</h2>
+                <div class="brands-grid">
+                    <img src="https://placehold.co/150x80/F5F5F7/0A1929?text=Honda" alt="Honda" class="brand-logo">
+                    <img src="https://placehold.co/150x80/F5F5F7/0A1929?text=Yamaha" alt="Yamaha" class="brand-logo">
+                    <img src="https://placehold.co/150x80/F5F5F7/0A1929?text=Suzuki" alt="Suzuki" class="brand-logo">
+                    <img src="https://placehold.co/150x80/F5F5F7/0A1929?text=Toyota" alt="Toyota" class="brand-logo">
+                    <img src="https://placehold.co/150x80/F5F5F7/0A1929?text=Hyundai" alt="Hyundai" class="brand-logo">
+                    <img src="https://placehold.co/150x80/F5F5F7/0A1929?text=Kia" alt="Kia" class="brand-logo">
+                    <img src="https://placehold.co/150x80/F5F5F7/0A1929?text=Royal+Enfield" alt="Royal Enfield" class="brand-logo">
+                    <img src="https://placehold.co/150x80/F5F5F7/0A1929?text=KTM" alt="KTM" class="brand-logo">
+                </div>
+            </div>
+        </section>
+
+        <!-- Maps Section -->
+        <section class="map-section">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">Visit Our Showroom</h2>
+                <div class="map-container">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.2219901290355!2d-74.00369368400567!3d40.71312937933185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a316bb7c7e3%3A0xb4697d7f0b5f3b!2sCity%20Hall%20Park!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus" 
+                        width="100%" 
+                        height="400" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy"
+                        title="AutoMarket Showroom Location">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="modern-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <img src="https://placehold.co/150x40/FFFFFF/0A1929?text=AutoMarket" alt="AutoMarket Logo" class="footer-logo">
+                    <p>Your trusted marketplace for quality used cars and bikes since 2015. Over 10,000 satisfied customers.</p>
+                    <div class="social-links">
+                        <a href="https://youtube.com/@yourchannel" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://instagram.com/yourprofile" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="vehicles.html">All Vehicles</a></li>
+                        <li><a href="vehicles.html?type=Car">Cars</a></li>
+                        <li><a href="vehicles.html?type=Bike">Bikes</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Popular Blog Posts</h4>
+                    <ul>
+                        <li><a href="blog-posts/buying-guide.html">Used Car Buying Guide</a></li>
+                        <li><a href="blog-posts/bike-maintenance.html">Bike Maintenance Tips</a></li>
+                        <li><a href="blog-posts/comparison.html">Car vs Bike: What to Choose?</a></li>
+                        <li><a href="blog-posts/financing.html">Financing Options Explained</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Info</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Auto Street, City, State</li>
+                        <li><i class="fas fa-phone"></i> +91 76749 05538</li>
+                        <li><i class="fas fa-envelope"></i> info@automarket.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 AutoMarket. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/917674905538?text=Hi%20AutoMarket%2C%20I'm%20interested%20in%20buying%20a%20vehicle" 
+       class="whatsapp-float" 
+       target="_blank"
+       aria-label="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Vehicle Detail Modal -->
+    <div class="modal" id="vehicle-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Vehicle Details</h2>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/animations.js"></script>
+</body>
+</html>

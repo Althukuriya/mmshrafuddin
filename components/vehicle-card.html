@@ -1,0 +1,12 @@
+<!-- components/vehicle-card.html -->
+<div class="vehicle-card" onclick="window.location.href='vehicle-detail.html?id={id}'">
+    <div class="vehicle-image">
+        <img src="{image}" alt="{name}" loading="lazy">
+        <span class="vehicle-badge {status}">{status}</span>
+    </div>
+    <div class="vehicle-info">
+        <h3 class="vehicle-name">{name}</h3>
+        <p class="vehicle-year">{year}</p>
+        <p class="vehicle-price">${price}</p>
+    </div>
+</div>
