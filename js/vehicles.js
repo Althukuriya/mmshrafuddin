@@ -5,10 +5,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚗 Vehicles page loaded");
     
     // Initialize AOS
-    AOS.init({
-        duration: 800,
-        once: true
-    });
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    }
 
     // Initialize mobile menu
     initMobileMenu();
@@ -25,8 +27,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const typeParam = urlParams.get('type');
     if (typeParam) {
-        document.getElementById('page-title').textContent = typeParam === 'Car' ? 'Browse Cars' : 'Browse Bikes';
-        document.getElementById('page-subtitle').textContent = `Find your perfect ${typeParam === 'Car' ? 'car' : 'bike'} from our collection`;
+        const titleEl = document.getElementById('page-title');
+        const subtitleEl = document.getElementById('page-subtitle');
+        if (titleEl) titleEl.textContent = typeParam === 'Car' ? 'Browse Cars' : 'Browse Bikes';
+        if (subtitleEl) subtitleEl.textContent = `Find your perfect ${typeParam === 'Car' ? 'car' : 'bike'} from our collection`;
         
         const tab = document.querySelector(`.filter-tab[data-filter="${typeParam}"]`);
         if (tab) tab.click();
@@ -60,36 +64,50 @@ async function loadVehicles() {
     const spinner = document.getElementById('loading-spinner');
     const noResults = document.getElementById('no-results');
     
-    if (!grid) return;
+    if (!grid) {
+        console.error("Vehicles grid not found!");
+        return;
+    }
     
-    spinner.style.display = 'block';
-    grid.style.display = 'none';
-    noResults.style.display = 'none';
+    // Show spinner
+    if (spinner) spinner.style.display = 'block';
+    if (grid) grid.style.display = 'none';
+    if (noResults) noResults.style.display = 'none';
     
     try {
-        console.log("Fetching vehicles from Google Sheets...");
+        console.log("📡 Fetching vehicles from Google Sheets...");
+        
+        // Check if fetchVehiclesFromSheet exists
+        if (typeof fetchVehiclesFromSheet !== 'function') {
+            console.error("fetchVehiclesFromSheet function not found!");
+            throw new Error("Data function missing");
+        }
         
         // Fetch vehicles
         const vehicles = await fetchVehiclesFromSheet();
         
-        console.log(`Loaded ${vehicles.length} vehicles`);
+        console.log(`✅ Loaded ${vehicles.length} vehicles`);
         
         if (vehicles.length > 0) {
             filteredVehicles = [...vehicles];
             renderVehicles(filteredVehicles);
             updateResultsCount(filteredVehicles.length);
         } else {
-            grid.innerHTML = '<p class="no-vehicles">No vehicles available</p>';
-            grid.style.display = 'block';
+            if (grid) {
+                grid.innerHTML = '<p class="no-vehicles">No vehicles available</p>';
+                grid.style.display = 'block';
+            }
         }
         
-        spinner.style.display = 'none';
+        if (spinner) spinner.style.display = 'none';
         
     } catch (error) {
-        console.error('Error loading vehicles:', error);
-        spinner.style.display = 'none';
-        grid.innerHTML = '<div class="error">Error loading vehicles. Please try again.</div>';
-        grid.style.display = 'block';
+        console.error('❌ Error loading vehicles:', error);
+        if (spinner) spinner.style.display = 'none';
+        if (grid) {
+            grid.innerHTML = '<div class="error">Error loading vehicles. Please try again.</div>';
+            grid.style.display = 'block';
+        }
     }
 }
 
@@ -100,19 +118,22 @@ function renderVehicles(vehicles) {
     if (!grid) return;
 
     if (vehicles.length === 0) {
-        grid.style.display = 'none';
-        noResults.style.display = 'block';
+        if (grid) grid.style.display = 'none';
+        if (noResults) noResults.style.display = 'block';
         return;
     }
 
-    grid.style.display = 'grid';
-    noResults.style.display = 'none';
+    if (grid) grid.style.display = 'grid';
+    if (noResults) noResults.style.display = 'none';
     
     grid.innerHTML = vehicles.map(vehicle => `
         <div class="vehicle-card" onclick="openVehicleModal(${vehicle.id})">
             <div class="vehicle-image">
-                <img src="${vehicle.image}" alt="${vehicle.name}" loading="lazy">
-                <span class="vehicle-badge ${vehicle.status.toLowerCase()}">${vehicle.status}</span>
+                <img src="${vehicle.image || 'https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image'}" 
+                     alt="${vehicle.name}" 
+                     loading="lazy"
+                     onerror="this.src='https://placehold.co/600x400/0A1929/FFFFFF?text=Image+Error'">
+                <span class="vehicle-badge ${(vehicle.status || 'available').toLowerCase()}">${vehicle.status || 'AVAILABLE'}</span>
             </div>
             <div class="vehicle-info">
                 <h3 class="vehicle-name">${vehicle.name}</h3>
@@ -125,7 +146,10 @@ function renderVehicles(vehicles) {
 
 function initFilters() {
     const tabs = document.querySelectorAll('.filter-tab');
-    if (!tabs.length) return;
+    if (!tabs.length) {
+        console.log("No filter tabs found");
+        return;
+    }
     
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -220,9 +244,13 @@ function updateResultsCount(count) {
 }
 
 function resetAllFilters() {
-    document.getElementById('live-search').value = '';
-    document.getElementById('clear-search').style.display = 'none';
-    document.getElementById('sort-price').value = 'default';
+    const searchInput = document.getElementById('live-search');
+    const clearBtn = document.getElementById('clear-search');
+    const sortSelect = document.getElementById('sort-price');
+    
+    if (searchInput) searchInput.value = '';
+    if (clearBtn) clearBtn.style.display = 'none';
+    if (sortSelect) sortSelect.value = 'default';
     
     const allTab = document.querySelector('.filter-tab[data-filter="all"]');
     if (allTab) {
