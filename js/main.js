@@ -1,6 +1,7 @@
 // js/main.js
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🏠 Homepage loaded");
+    console.log("✅ main.js loaded");
     
     // Initialize AOS
     AOS.init({
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load vehicles FIRST
     console.log("Loading vehicles for homepage...");
     await fetchVehiclesFromSheet();
+    console.log("allVehicles after fetch:", window.allVehicles?.length);
     
     // Then load featured vehicles
     loadFeaturedVehicles();
@@ -27,6 +29,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Set active nav link
     setActiveNavLink();
+    
+    // Initialize modal close handlers
+    initModalHandlers();
 });
 
 function initHeroSlider() {
@@ -182,44 +187,107 @@ function setActiveNavLink() {
     });
 }
 
+// ========== MODAL FUNCTIONS ==========
+
+// Initialize modal close handlers
+function initModalHandlers() {
+    const modal = document.getElementById('vehicle-modal');
+    if (!modal) return;
+    
+    const closeBtn = modal.querySelector('.modal-close');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+            closeModal();
+        }
+    });
+}
+
 // Make openVehicleModal globally available
 window.openVehicleModal = function(vehicleId) {
-    const vehicle = window.allVehicles.find(v => v.id === vehicleId);
+    console.log("🔍 Opening modal for vehicle ID:", vehicleId);
+    
+    // Convert to number if it's a string
+    const id = typeof vehicleId === 'string' ? parseInt(vehicleId) : vehicleId;
+    
+    // Find vehicle in global storage
+    const vehicle = window.allVehicles.find(v => v.id === id);
+    
     if (!vehicle) {
-        console.error("Vehicle not found:", vehicleId);
+        console.error("❌ Vehicle not found! ID:", id);
+        console.log("Available vehicles:", window.allVehicles);
+        alert("Vehicle not found!");
         return;
     }
+    
+    console.log("✅ Found vehicle:", vehicle.name);
     
     const modal = document.getElementById('vehicle-modal');
     const modalBody = document.getElementById('modal-body');
     const modalTitle = document.getElementById('modal-title');
     
-    if (!modal || !modalBody || !modalTitle) return;
+    if (!modal || !modalBody || !modalTitle) {
+        console.error("❌ Modal elements not found!");
+        return;
+    }
     
     modalTitle.textContent = vehicle.name;
     
     // Generate images HTML
     let imagesHtml = '';
     if (vehicle.images && vehicle.images.length > 0) {
-        imagesHtml = `
-            <div class="modal-vehicle-gallery">
-                <div class="modal-main-image">
-                    <img src="${vehicle.images[0]}" alt="${vehicle.name}" id="modal-main-img">
-                </div>
+        // Filter out empty images
+        const validImages = vehicle.images.filter(img => img && img !== 'https://placehold.co/600x400?text=No+Image' && img.includes('http'));
+        
+        if (validImages.length > 0) {
+            // Main image with error handling
+            const mainImage = validImages[0];
+            
+            // Thumbnails
+            const thumbnailsHtml = validImages.length > 1 ? `
                 <div class="modal-thumbnails">
-                    ${vehicle.images.map((img, index) => `
+                    ${validImages.map((img, index) => `
                         <img src="${img}" alt="Thumbnail ${index + 1}" 
                              class="modal-thumbnail ${index === 0 ? 'active' : ''}"
-                             onclick="changeModalImage('${img}', this)">
+                             onclick="window.changeModalImage('${img}', this)"
+                             onerror="this.src='https://placehold.co/80x80/0A1929/FFFFFF?text=No+Image'">
                     `).join('')}
                 </div>
-            </div>
-        `;
+            ` : '';
+            
+            imagesHtml = `
+                <div class="modal-vehicle-gallery">
+                    <div class="modal-main-image">
+                        <img src="${mainImage}" alt="${vehicle.name}" id="modal-main-img" 
+                             onerror="this.src='https://placehold.co/600x400/0A1929/FFFFFF?text=Image+Not+Found'">
+                    </div>
+                    ${thumbnailsHtml}
+                </div>
+            `;
+        } else {
+            imagesHtml = `
+                <div class="modal-vehicle-gallery">
+                    <div class="modal-main-image">
+                        <img src="https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image+Available" alt="No Image">
+                    </div>
+                </div>
+            `;
+        }
     } else {
         imagesHtml = `
             <div class="modal-vehicle-gallery">
                 <div class="modal-main-image">
-                    <img src="${vehicle.image}" alt="${vehicle.name}">
+                    <img src="https://placehold.co/600x400/0A1929/FFFFFF?text=No+Image+Available" alt="No Image">
                 </div>
             </div>
         `;
@@ -228,7 +296,7 @@ window.openVehicleModal = function(vehicleId) {
     // YouTube button only if link exists
     const youtubeButton = vehicle.youtube && vehicle.youtube.trim() !== '' ? 
         `<a href="${vehicle.youtube}" target="_blank" class="btn-youtube">
-            <i class="fab fa-youtube"></i> Watch Review on YouTube
+            <i class="fab fa-youtube"></i> Watch Full Review on YouTube
         </a>` : '';
     
     modalBody.innerHTML = `
@@ -274,6 +342,7 @@ window.openVehicleModal = function(vehicleId) {
 
 // Function to change modal image
 window.changeModalImage = function(src, element) {
+    console.log("Changing image to:", src);
     const mainImg = document.getElementById('modal-main-img');
     if (mainImg) {
         mainImg.src = src;
@@ -283,7 +352,9 @@ window.changeModalImage = function(src, element) {
     document.querySelectorAll('.modal-thumbnail').forEach(t => {
         t.classList.remove('active');
     });
-    element.classList.add('active');
+    if (element) {
+        element.classList.add('active');
+    }
 };
 
 // Share function
@@ -315,30 +386,7 @@ function copyToClipboard(text) {
     });
 }
 
-// Modal close handlers
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('vehicle-modal');
-    if (!modal) return;
-    
-    const closeBtn = modal.querySelector('.modal-close');
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-    }
-    
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-    
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('show')) {
-            closeModal();
-        }
-    });
-});
-
+// Close modal function
 function closeModal() {
     const modal = document.getElementById('vehicle-modal');
     if (modal) {
